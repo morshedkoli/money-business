@@ -1,0 +1,325 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  name      String?
+  phone     String?   @unique
+  password  String?
+  role      Role     @default(USER)
+  isActive  Boolean  @default(true)
+  
+  // Email verification
+  emailVerified Boolean @default(false)
+  emailOTP      String?
+  emailOTPExpiry DateTime?
+  
+  // Wallet
+  walletBalance Float @default(0)
+  currency      String @default("BDT")
+  
+  // Profile
+  profileImage String?
+  address      Address?
+  
+  // Mobile Money Accounts
+  bkashNumber    String?
+  bkashVerified  Boolean @default(false)
+  nagadNumber    String?
+  nagadVerified  Boolean @default(false)
+  rocketNumber   String?
+  rocketVerified Boolean @default(false)
+  
+  // Timestamps
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  sentTransfers     Transfer[] @relation("SenderTransfers")
+  receivedTransfers Transfer[] @relation("RecipientTransfers")
+  approvedTransfers Transfer[] @relation("ApprovedTransfers")
+  
+  mobileMoneyRequests   MobileMoneyRequest[] @relation("RequesterRequests")
+  fulfilledRequests     MobileMoneyRequest[] @relation("FulfillerRequests")
+  verifiedRequests      MobileMoneyRequest[] @relation("VerifierRequests")
+  
+  walletTransactions WalletTransaction[]
+  wallet             Wallet?
+  transactions       Transaction[] @relation("UserTransactions")
+  
+  // Settings
+  notificationSettings NotificationSettings?
+  securitySettings     SecuritySettings?
+  preferences          UserPreferences?
+  
+  // Activity Logs
+  activityLogs     ActivityLog[] @relation("UserActivityLogs")
+  adminActivityLogs ActivityLog[] @relation("AdminActivityLogs")
+  
+  @@map("users")
+}
+
+type Address {
+  street  String?
+  city    String?
+  state   String?
+  zipCode String?
+  country String @default("Bangladesh")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Transfer {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  senderId    String        @db.ObjectId
+  recipientId String        @db.ObjectId
+  amount      Float
+  currency    String        @default("BDT")
+  type        TransferType
+  status      TransferStatus @default(PENDING)
+  description String?
+  reference   String        @unique
+  fees        Float         @default(0)
+  
+  adminApproved Boolean   @default(false)
+  approvedById  String?   @db.ObjectId
+  approvedAt    DateTime?
+  completedAt   DateTime?
+  failureReason String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  sender     User  @relation("SenderTransfers", fields: [senderId], references: [id])
+  recipient  User  @relation("RecipientTransfers", fields: [recipientId], references: [id])
+  approvedBy User? @relation("ApprovedTransfers", fields: [approvedById], references: [id])
+  
+  @@map("transfers")
+}
+
+enum TransferType {
+  USER_TO_USER
+  ADMIN_TO_USER
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model MobileMoneyRequest {
+  id              String                    @id @default(auto()) @map("_id") @db.ObjectId
+  requesterId     String                    @db.ObjectId
+  fulfillerId     String?                   @db.ObjectId
+  amount          Float
+  currency        String                    @default("BDT")
+  provider        MobileMoneyProvider
+  recipientNumber String
+  reference       String                    @unique
+  description     String?
+  status          MobileMoneyRequestStatus  @default(PENDING)
+  fees            Float                     @default(0)
+  totalAmount     Float
+  
+  acceptedAt    DateTime?
+  fulfilledAt   DateTime?
+  
+  adminVerified Boolean   @default(false)
+  verifiedById  String?   @db.ObjectId
+  verifiedAt    DateTime?
+  
+  transactionId String?
+  senderNumber  String?
+  screenshot    String?
+  notes         String?
+  
+  expiresAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  requester User  @relation("RequesterRequests", fields: [requesterId], references: [id])
+  fulfiller User? @relation("FulfillerRequests", fields: [fulfillerId], references: [id])
+  verifiedBy User? @relation("VerifierRequests", fields: [verifiedById], references: [id])
+  
+  @@map("mobile_money_requests")
+}
+
+enum MobileMoneyProvider {
+  BKASH
+  NAGAD
+  ROCKET
+}
+
+enum MobileMoneyRequestStatus {
+  PENDING
+  ACCEPTED
+  FULFILLED
+  VERIFIED
+  CANCELLED
+  EXPIRED
+}
+
+model WalletTransaction {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String            @db.ObjectId
+  type        TransactionType
+  amount      Float
+  currency    String            @default("BDT")
+  description String?
+  reference   String?
+  balanceBefore Float
+  balanceAfter  Float
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("wallet_transactions")
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+  TRANSFER_IN
+  TRANSFER_OUT
+  ADMIN_CREDIT
+  MOBILE_MONEY_OUT
+  MOBILE_MONEY_IN
+  FEE
+}
+
+model FeeSettings {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  transferFeePercent Float   @default(0)
+  mobileMoneyFeePercent Float @default(0)
+  minimumFee        Float    @default(0)
+  maximumFee        Float    @default(0)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("fee_settings")
+}
+
+model Wallet {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String @unique @db.ObjectId
+  balance Float  @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("wallets")
+}
+
+model Transaction {
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String  @db.ObjectId
+  type             String
+  amount           Float
+  description      String?
+  relatedRequestId String? @db.ObjectId
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user User @relation("UserTransactions", fields: [userId], references: [id])
+  
+  @@map("transactions")
+}
+
+model NotificationSettings {
+  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String  @unique @db.ObjectId
+  emailNotifications  Boolean @default(true)
+  smsNotifications    Boolean @default(true)
+  pushNotifications   Boolean @default(true)
+  transactionAlerts   Boolean @default(true)
+  securityAlerts      Boolean @default(true)
+  marketingEmails     Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("notification_settings")
+}
+
+model SecuritySettings {
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String  @unique @db.ObjectId
+  twoFactorEnabled Boolean @default(false)
+  loginAlerts      Boolean @default(true)
+  sessionTimeout   Int     @default(30) // in minutes
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("security_settings")
+}
+
+model UserPreferences {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @unique @db.ObjectId
+  theme    String @default("light") // light, dark, system
+  language String @default("en")
+  timezone String @default("Asia/Dhaka")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("user_preferences")
+}
+
+model ActivityLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String?  @db.ObjectId
+  adminId     String?  @db.ObjectId
+  action      String   // e.g., "LOGIN", "TRANSFER_CREATED", "MOBILE_MONEY_REQUEST", "PROFILE_UPDATED"
+  entity      String?  // e.g., "USER", "TRANSFER", "MOBILE_MONEY_REQUEST"
+  entityId    String?  @db.ObjectId
+  description String
+  metadata    Json?    // Additional data like IP address, user agent, etc.
+  ipAddress   String?
+  userAgent   String?
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user  User? @relation("UserActivityLogs", fields: [userId], references: [id])
+  admin User? @relation("AdminActivityLogs", fields: [adminId], references: [id])
+  
+  @@map("activity_logs")
+}
