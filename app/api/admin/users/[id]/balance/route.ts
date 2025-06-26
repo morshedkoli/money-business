@@ -49,15 +49,9 @@ function checkRateLimit(ip: string): boolean {
   return true
 }
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
-
 export async function POST(
   request: NextRequest,
-  context: RouteParams
+  { params }: { params: { id: string } }
 ) {
   const startTime = Date.now()
   const { params } = context
