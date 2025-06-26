@@ -180,21 +180,18 @@ enum MobileMoneyRequestStatus {
 }
 
 model WalletTransaction {
-  id          String            @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String            @db.ObjectId
-  type        TransactionType
-  amount      Float
-  currency    String            @default("BDT")
-  description String?
-  reference   String?
-  balanceBefore Float
-  balanceAfter  Float
-  
-  createdAt DateTime @default(now())
-  
-  // Relations
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  type            String
+  amount          Float
+  description     String
+  balanceBefore   Float
+  balanceAfter    Float
+  reference       String   @unique
+  createdAt       DateTime @default(now())
+
   user User @relation(fields: [userId], references: [id])
-  
+
   @@map("wallet_transactions")
 }
 
@@ -305,21 +302,17 @@ model UserPreferences {
 
 model ActivityLog {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String?  @db.ObjectId
-  adminId     String?  @db.ObjectId
-  action      String   // e.g., "LOGIN", "TRANSFER_CREATED", "MOBILE_MONEY_REQUEST", "PROFILE_UPDATED"
-  entity      String?  // e.g., "USER", "TRANSFER", "MOBILE_MONEY_REQUEST"
-  entityId    String?  @db.ObjectId
+  userId      String   @db.ObjectId
+  action      String
+  entity      String?
+  entityId    String?
   description String
-  metadata    Json?    // Additional data like IP address, user agent, etc.
+  metadata    Json?
   ipAddress   String?
   userAgent   String?
-  
-  createdAt DateTime @default(now())
-  
-  // Relations
-  user  User? @relation("UserActivityLogs", fields: [userId], references: [id])
-  admin User? @relation("AdminActivityLogs", fields: [adminId], references: [id])
-  
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
   @@map("activity_logs")
 }
