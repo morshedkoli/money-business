@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, otp } = await request.json()
+    const { email, otp, context } = await request.json()
 
     if (!email || !otp) {
       return NextResponse.json(
@@ -40,24 +40,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Mark email as verified and clear OTP
-    await prisma.user.update({
-      where: { email: email.toLowerCase() },
-      data: {
-        emailVerified: true,
-        emailOTP: null,
-        emailOTPExpiry: null
-      }
-    })
+    // Handle different contexts
+    if (context === 'RESET_PASSWORD') {
+      // For password reset, just verify OTP without clearing it
+      // The OTP will be cleared when password is actually reset
+      return NextResponse.json(
+        { 
+          message: 'OTP verified successfully',
+          email: email,
+          verified: true
+        },
+        { status: 200 }
+      )
+    } else {
+      // For email verification during registration, mark email as verified and clear OTP
+      await prisma.user.update({
+        where: { email: email.toLowerCase() },
+        data: {
+          emailVerified: true,
+          emailOTP: null,
+          emailOTPExpiry: null
+        }
+      })
 
-    return NextResponse.json(
-      { 
-        message: 'Email verified successfully',
-        email: email,
-        verified: true
-      },
-      { status: 200 }
-    )
+      return NextResponse.json(
+        { 
+          message: 'Email verified successfully',
+          email: email,
+          verified: true
+        },
+        { status: 200 }
+      )
+    }
 
   } catch (error) {
     console.error('Verify OTP error:', error)

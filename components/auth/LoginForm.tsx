@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '@/components/providers/AuthProvider'
+import Link from 'next/link'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 interface LoginFormData {
@@ -91,6 +92,14 @@ export default function LoginForm() {
         {errors.password && (
           <p className="mt-1 text-sm text-danger-600">{errors.password.message}</p>
         )}
+      </div>
+
+      <div className="text-sm text-right">
+        <Link href="/reset-password">
+          <span className="font-medium text-primary-600 hover:text-primary-500 cursor-pointer">
+            Forgot Password?
+          </span>
+        </Link>
       </div>
 
       <button

@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData.user)
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Auth check failed:', error)
     } finally {
       setLoading(false)
@@ -107,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Login error:', error)
       toast.error('Login failed. Please try again.')
       return false
@@ -148,6 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Registration error:', error)
       toast.error('Registration failed. Please try again.')
       return false
@@ -181,12 +184,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.success('Logged out successfully')
       } else {
         // Server logout failed, but still clear local state for security
+        // eslint-disable-next-line no-console
         console.error('Server logout failed, but clearing local session')
         setUser(null)
         router.push('/')
         toast.error('Logout may not have completed properly. Please clear your browser cookies if you continue to have issues.')
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Logout error:', error)
       // Even if logout fails, clear local state for security
       setUser(null)
@@ -212,6 +217,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData.user)
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to refresh user:', error)
     }
   }
