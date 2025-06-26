@@ -54,7 +54,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   const startTime = Date.now()
-  const { params } = context
+  
   
   try {
     // Rate limiting
