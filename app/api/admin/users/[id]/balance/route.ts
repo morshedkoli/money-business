@@ -21,12 +21,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
-// Configure for Vercel Edge Runtime (optional - uncomment if needed)
-// export const runtime = 'edge'
-
-// Configure for specific regions (uncomment and modify as needed)
-// export const preferredRegion = ['iad1', 'sfo1'] // US East & West
-
 // Input validation schema
 const balanceUpdateSchema = z.object({
   amount: z.number().positive('Amount must be positive').max(1000000, 'Amount too large'),
@@ -55,18 +49,25 @@ function checkRateLimit(ip: string): boolean {
   return true
 }
 
+interface RouteParams {
+  params: {
+    id: string
+  }
+}
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteParams
 ) {
   const startTime = Date.now()
+  const { params } = context
   
   try {
     // Rate limiting
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
-        { message: 'Too many requests. Please try again later.' },
+        { success: false, message: 'Too many requests. Please try again later.' },
         { status: 429 }
       )
     }
@@ -78,6 +79,7 @@ export async function POST(
     if (!validationResult.success) {
       return NextResponse.json(
         { 
+          success: false,
           message: 'Invalid input', 
           errors: validationResult.error.errors.map(e => e.message)
         },
@@ -91,14 +93,14 @@ export async function POST(
     // Validate UUID format
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
       return NextResponse.json(
-        { message: 'Invalid user ID format' },
+        { success: false, message: 'Invalid user ID format' },
         { status: 400 }
       )
     }
 
     // Use database transaction for atomicity
     const result = await prisma.$transaction(async (tx) => {
-      // Get current user and wallet balance with row locking
+      // Get current user and wallet balance
       const user = await tx.user.findUnique({
         where: { id: userId },
         select: { id: true, name: true, walletBalance: true, role: true }
@@ -210,8 +212,6 @@ export async function POST(
     // Log error for monitoring (avoid logging sensitive data)
     console.error('Balance update error:', {
       userId: params.id,
-      type,
-      amount,
       error: error instanceof Error ? error.message : 'Unknown error',
       responseTime: `${responseTime}ms`,
       timestamp: new Date().toISOString()
