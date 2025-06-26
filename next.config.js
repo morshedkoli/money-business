@@ -31,9 +31,11 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
+  // Server external packages
+  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
+  
   // Experimental features for better performance
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
     optimizePackageImports: ['@heroicons/react', 'lucide-react'],
   },
   

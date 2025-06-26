@@ -66,7 +66,7 @@ model User {
   preferences          UserPreferences?
   
   // Activity Logs
-  activityLogs     ActivityLog[] @relation("UserActivityLogs")
+  activityLogs     ActivityLog[]
   adminActivityLogs ActivityLog[] @relation("AdminActivityLogs")
   
   @@map("users")
@@ -302,7 +302,8 @@ model UserPreferences {
 
 model ActivityLog {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
+  userId      String?  @db.ObjectId
+  adminId     String?  @db.ObjectId
   action      String
   entity      String?
   entityId    String?
@@ -312,7 +313,8 @@ model ActivityLog {
   userAgent   String?
   createdAt   DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user  User? @relation(fields: [userId], references: [id])
+  admin User? @relation("AdminActivityLogs", fields: [adminId], references: [id])
 
   @@map("activity_logs")
 }

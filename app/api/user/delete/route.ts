@@ -16,8 +16,8 @@ export async function DELETE(request: NextRequest) {
     const decoded = verify(token, JWT_SECRET) as { userId: string }
 
     // Check if user exists
-    const user = await prisma.users.findUnique({
-      where: { _id: decoded.userId },
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
     })
 
     if (!user) {
@@ -25,12 +25,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if user has pending transactions or outstanding balances
-    const pendingTransactions = await prisma.transactions.count({
+    const pendingTransactions = await prisma.transaction.count({
       where: {
-        OR: [
-          { senderId: decoded.userId, status: 'PENDING' },
-          { receiverId: decoded.userId, status: 'PENDING' },
-        ],
+        userId: decoded.userId,
+        type: 'PENDING'
       },
     })
 
@@ -56,32 +54,29 @@ export async function DELETE(request: NextRequest) {
     // Start transaction to delete user and related data
     await prisma.$transaction(async (tx) => {
       // Delete user's transactions (completed ones for record keeping)
-      await tx.transactions.updateMany({
+      await tx.transaction.updateMany({
         where: {
-          OR: [
-            { senderId: decoded.userId },
-            { receiverId: decoded.userId },
-          ],
+          userId: decoded.userId,
         },
         data: {
           // Mark as deleted instead of actually deleting for audit purposes
-          status: 'DELETED',
+          type: 'DELETED',
         },
       })
 
       // Delete mobile money requests
-      await tx.mobileMoneyRequests.deleteMany({
-        where: { userId: decoded.userId },
+      await tx.mobileMoneyRequest.deleteMany({
+        where: { requesterId: decoded.userId },
       })
 
       // Delete wallet transactions
-      await tx.walletTransactions.deleteMany({
+      await tx.walletTransaction.deleteMany({
         where: { userId: decoded.userId },
       })
 
       // Finally delete the user
-      await tx.users.delete({
-        where: { _id: decoded.userId },
+      await tx.user.delete({
+        where: { id: decoded.userId },
       })
     })
 

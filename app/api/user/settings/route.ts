@@ -81,8 +81,8 @@ export async function PUT(request: NextRequest) {
     const body: UserSettings = await request.json()
 
     // Validate the user exists
-    const user = await prisma.users.findUnique({
-      where: { _id: decoded.userId },
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
     })
 
     if (!user) {

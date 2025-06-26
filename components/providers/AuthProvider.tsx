@@ -12,6 +12,7 @@ interface User {
   phone: string
   role: 'USER' | 'ADMIN'
   isActive: boolean
+  emailVerified: boolean
   walletBalance: number
   currency: string
   profileImage?: string

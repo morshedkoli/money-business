@@ -89,11 +89,12 @@ export async function POST(request: NextRequest) {
     await prisma.walletTransaction.create({
       data: {
         userId: user.id,
-        type: 'CREDIT',
+        type: 'ADMIN_CREDIT',
         amount: 0,
         description: 'Account created',
         balanceBefore: 0,
-        balanceAfter: 0
+        balanceAfter: 0,
+        reference: `ACCOUNT_CREATED_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
       }
     })
 

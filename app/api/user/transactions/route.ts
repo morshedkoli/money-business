@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
         metadata: {
           recipient: transfer.recipient,
           transferType: transfer.type,
-          fee: transfer.fee,
+          fee: transfer.fees,
         },
       }))
 
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
         metadata: {
           sender: transfer.sender,
           transferType: transfer.type,
-          fee: transfer.fee,
+          fee: transfer.fees,
         },
       }))
 
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
         createdAt: request.createdAt,
         metadata: {
           provider: request.provider,
-          phoneNumber: request.phoneNumber,
+          phoneNumber: request.recipientNumber,
           fulfiller: request.fulfiller,
         },
       }))

@@ -16,6 +16,7 @@ import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth'
 import { ACTIVITY_TYPES, ENTITY_TYPES } from '@/lib/activity-logger'
 
+
 // Zod schema with UUID validation
 const balanceUpdateSchema = z.object({
   amount: z.number().positive('Amount must be positive').max(1_000_000, 'Amount too large'),
@@ -47,15 +48,14 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number; rese
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   const startTime = Date.now()
-  try {
-    const admin = await requireAdmin(req)
+  const admin = await requireAdmin(req)
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     req.headers.get('x-real-ip') ??
-    req.ip ??
     'unknown'
 
   const rate = checkRateLimit(ip)
@@ -77,7 +77,7 @@ export async function POST(
 
   try {
     const body = await req.json()
-    const validation = balanceUpdateSchema.safeParse({ ...body, id: ctx.params.id })
+    const validation = balanceUpdateSchema.safeParse({ ...body, id: params.id })
 
     if (!validation.success) {
       return NextResponse.json(
@@ -120,7 +120,7 @@ export async function POST(
 
         const transaction = await tx.walletTransaction.create({
           data: {
-            userId,
+            userId: user.id,
             type: type === 'add' ? 'ADMIN_CREDIT' : 'DEBIT',
             amount,
             description: `Admin ${type === 'add' ? 'added' : 'deducted'} balance`,
@@ -152,7 +152,6 @@ export async function POST(
       },
       {
         timeout: 10_000,
-        isolationLevel: 'Serializable',
       }
     )
 

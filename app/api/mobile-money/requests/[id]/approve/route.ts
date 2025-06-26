@@ -4,8 +4,9 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     const user = await getUserFromToken(request)
 
@@ -54,8 +55,10 @@ export async function POST(
       where: { id: requestId },
       data: {
         status: 'ACCEPTED',
-        approvedAt: new Date(),
-        approvedBy: user.id
+        acceptedAt: new Date(),
+        adminVerified: true,
+        verifiedById: user.id,
+        verifiedAt: new Date()
       },
       include: {
         requester: {

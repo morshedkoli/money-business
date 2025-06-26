@@ -4,8 +4,9 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     const user = await getUserFromToken(request)
 
@@ -76,7 +77,7 @@ export async function POST(
       await tx.walletTransaction.create({
         data: {
           userId: mobileMoneyRequest.requesterId,
-          type: 'CREDIT',
+          type: 'MOBILE_MONEY_IN',
           amount: refundAmount,
           description: `Refund for cancelled ${mobileMoneyRequest.provider} request - ${mobileMoneyRequest.recipientNumber}`,
           reference: `REFUND-${mobileMoneyRequest.reference}`,
