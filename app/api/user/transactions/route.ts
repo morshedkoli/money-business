@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (type === 'all' || type === 'wallet') {
       const walletTransactions = await prisma.walletTransaction.findMany({
         where: {
-          userId: user.id,
+          userId: user.id
         },
         orderBy: {
           createdAt: 'desc',

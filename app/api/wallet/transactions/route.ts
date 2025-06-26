@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const transactions = await prisma.walletTransaction.findMany({
       where: {
-        userId: user.id,
+        userId: user.id
       },
       orderBy: {
         createdAt: 'desc',
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     const total = await prisma.walletTransaction.count({
       where: {
-        userId: user.id,
+        userId: user.id
       },
     })
 
