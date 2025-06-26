@@ -169,16 +169,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
       }
       
-      await fetch('/api/auth/logout', {
+      const response = await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include', // Include cookies in the request
       })
+
+      if (response.ok) {
+        // Successfully logged out on server
+        setUser(null)
+        router.push('/')
+        toast.success('Logged out successfully')
+      } else {
+        // Server logout failed, but still clear local state for security
+        console.error('Server logout failed, but clearing local session')
+        setUser(null)
+        router.push('/')
+        toast.error('Logout may not have completed properly. Please clear your browser cookies if you continue to have issues.')
+      }
     } catch (error) {
       console.error('Logout error:', error)
-    } finally {
+      // Even if logout fails, clear local state for security
       setUser(null)
       router.push('/')
-      toast.success('Logged out successfully')
+      toast.error('Logout error occurred. Please clear your browser cookies if you continue to have issues.')
     }
   }
 
