@@ -11,9 +11,10 @@ export async function POST(request: NextRequest) {
     response.cookies.set('token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 0, // Expire immediately
-      path: '/'
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
     })
 
     return response

@@ -17,7 +17,10 @@
     "postinstall": "prisma generate",
     "vercel-build": "prisma generate && next build",
     "deploy:vercel": "vercel --prod",
-    "preview": "vercel"
+    "preview": "vercel",
+    "setup:secrets": "node scripts/setup-vercel-env.js generate",
+    "setup:validate": "node scripts/setup-vercel-env.js validate",
+    "setup:help": "node scripts/setup-vercel-env.js help"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
