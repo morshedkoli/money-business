@@ -64,15 +64,25 @@ export async function POST(request: NextRequest) {
     // Clear any existing token first
     response.cookies.delete('token')
     
-    // Set new JWT token as HTTP-only cookie
-    response.cookies.set('token', token, {
+    // Set new JWT token as HTTP-only cookie with proper domain handling
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
-    })
+      path: '/'
+    } as const
+
+    // Set cookie without domain for localhost compatibility
+    response.cookies.set('token', token, cookieOptions)
+    
+    // For production Vercel deployments, also set with domain
+    if (process.env.NODE_ENV === 'production') {
+      const host = request.headers.get('host')
+      if (host && host.includes('.vercel.app')) {
+        response.cookies.set('token', token, { ...cookieOptions, domain: '.vercel.app' })
+      }
+    }
 
     return response
   } catch (error) {
