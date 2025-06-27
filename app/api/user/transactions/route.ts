@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         take: type === 'wallet' ? limit : undefined,
       })
 
-      const transformedWalletTransactions = walletTransactions.map(transaction => ({
+      const transformedWalletTransactions: TransactionItem[] = walletTransactions.map(transaction => ({
         id: transaction.id,
         type: 'WALLET_TRANSACTION',
         subType: transaction.type,
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
         take: type === 'transfer' ? limit : undefined,
       })
 
-      const transformedSentTransfers = sentTransfers.map(transfer => ({
+      const transformedSentTransfers: TransactionItem[] = sentTransfers.map(transfer => ({
         id: transfer.id,
         type: 'TRANSFER_SENT',
         subType: transfer.type,
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
         take: type === 'transfer' ? limit : undefined,
       })
 
-      const transformedReceivedTransfers = receivedTransfers.map(transfer => ({
+      const transformedReceivedTransfers: TransactionItem[] = receivedTransfers.map(transfer => ({
         id: transfer.id,
         type: 'TRANSFER_RECEIVED',
         subType: transfer.type,
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
         take: type === 'mobile_money' ? limit : undefined,
       })
 
-      const transformedMobileMoneyRequests = mobileMoneyRequests.map(request => ({
+      const transformedMobileMoneyRequests: TransactionItem[] = mobileMoneyRequests.map(request => ({
         id: request.id,
         type: 'MOBILE_MONEY_REQUEST',
         subType: request.provider,
@@ -194,9 +194,9 @@ export async function GET(request: NextRequest) {
         take: type === 'transaction' ? limit : undefined,
       })
 
-      const transformedTransactions = transactions.map(transaction => ({
+      const transformedTransactions: TransactionItem[] = transactions.map(transaction => ({
         id: transaction.id,
-        type: 'TRANSACTION',
+        type: 'WALLET_TRANSACTION',
         subType: transaction.type,
         amount: transaction.amount,
         description: transaction.description,

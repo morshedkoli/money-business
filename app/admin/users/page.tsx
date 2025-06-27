@@ -50,10 +50,6 @@ function AdminUsersContent() {
   const [balanceAmount, setBalanceAmount] = useState('')
   const [balanceLoading, setBalanceLoading] = useState(false)
 
-  useEffect(() => {
-    fetchUsers()
-  }, [currentPage, searchQuery, filterRole, filterStatus, sortBy, sortOrder, fetchUsers])
-
   const fetchUsers = useCallback(async () => {
     try {
       setUsersLoading(true)
@@ -93,6 +89,10 @@ function AdminUsersContent() {
       setUsersLoading(false)
     }
   }, [currentPage, searchQuery, filterRole, filterStatus, sortBy, sortOrder])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [currentPage, searchQuery, filterRole, filterStatus, sortBy, sortOrder, fetchUsers])
 
   const toggleUserStatus = async (userId: string, currentStatus: boolean) => {
     try {

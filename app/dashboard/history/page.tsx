@@ -67,16 +67,6 @@ function HistoryPageContent() {
     setMounted(true)
   }, [])
 
-  useEffect(() => {
-    if (mounted && !loading) {
-      if (!user) {
-        router.push('/login')
-        return
-      }
-      fetchTransactions()
-    }
-  }, [mounted, loading, user, router, pagination.page, typeFilter, statusFilter, fetchTransactions])
-
   const fetchTransactions = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -106,6 +96,16 @@ function HistoryPageContent() {
       setIsLoading(false)
     }
   }, [pagination.page, pagination.limit, typeFilter])
+
+  useEffect(() => {
+    if (mounted && !loading) {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      fetchTransactions()
+    }
+  }, [mounted, loading, user, router, pagination.page, typeFilter, statusFilter, fetchTransactions])
 
   const getTransactionIcon = (type: string, amount: number) => {
     if (type === 'TRANSFER_SENT' || amount < 0) {

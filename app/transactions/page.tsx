@@ -84,12 +84,6 @@ export default function TransactionsPage() {
     }
   }, [user, loading, mounted, router])
 
-  useEffect(() => {
-    if (user) {
-      fetchTransactions()
-    }
-  }, [user, pagination.page, typeFilter, dateFilter, fetchTransactions])
-
   const fetchTransactions = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -128,6 +122,12 @@ export default function TransactionsPage() {
       setIsLoading(false)
     }
   }, [pagination.page, pagination.limit, typeFilter, dateFilter, searchTerm])
+
+  useEffect(() => {
+    if (user) {
+      fetchTransactions()
+    }
+  }, [user, pagination.page, typeFilter, dateFilter, fetchTransactions])
 
   const handleSearch = () => {
     setPagination(prev => ({ ...prev, page: 1 }))

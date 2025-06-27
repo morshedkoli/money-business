@@ -52,7 +52,8 @@ export async function POST(request: NextRequest) {
     const token = generateToken({ userId: user.id, email: user.email, role: user.role })
 
     // Remove password from response
-    const { password, ...userWithoutPassword } = user
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...userWithoutPassword } = user
 
     // Create response with user data
     const response = NextResponse.json({

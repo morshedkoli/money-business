@@ -102,12 +102,6 @@ export default function DashboardUsersPage() {
     }
   }, [user, loading, mounted, router])
 
-  useEffect(() => {
-    if (user) {
-      fetchUserProfile()
-    }
-  }, [user, fetchUserProfile])
-
   const fetchUserProfile = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -148,6 +142,12 @@ export default function DashboardUsersPage() {
       setIsLoading(false)
     }
   }, [resetProfile, resetMobileMoney])
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile()
+    }
+  }, [user, fetchUserProfile])
 
   const onSubmitProfile = async (data: ProfileFormData) => {
     setIsUpdating(true)
