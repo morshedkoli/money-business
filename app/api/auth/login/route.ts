@@ -64,23 +64,32 @@ export async function POST(request: NextRequest) {
     // Clear any existing token first
     response.cookies.delete('token')
     
+    // Debug logging for production
+    const host = request.headers.get('host')
+    console.log('Login - Host:', host)
+    console.log('Login - NODE_ENV:', process.env.NODE_ENV)
+    
     // Set new JWT token as HTTP-only cookie with proper domain handling
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax', // Changed from 'none' to 'lax' for better compatibility
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/'
     } as const
 
-    // Set cookie without domain for localhost compatibility
-    response.cookies.set('token', token, cookieOptions)
+    console.log('Login - Cookie options:', cookieOptions)
     
-    // For production Vercel deployments, also set with domain
+    // Set cookie - let browser handle domain automatically
+    response.cookies.set('token', token, cookieOptions)
+    console.log('Login - Cookie set successfully')
+    
+    // For production, ensure cookie works across subdomains if needed
     if (process.env.NODE_ENV === 'production') {
-      const host = request.headers.get('host')
-      if (host && host.includes('.vercel.app')) {
-        response.cookies.set('token', token, { ...cookieOptions, domain: '.vercel.app' })
+      if (host) {
+        // Also set without explicit domain to ensure compatibility
+        response.cookies.set('token', token, { ...cookieOptions, domain: undefined })
+        console.log('Login - Additional cookie set for production')
       }
     }
 

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax', // Changed from 'none' to 'lax' for consistency
       maxAge: 0, // Expire immediately
       path: '/'
     } as const
