@@ -1,13 +1,83 @@
-import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
 import { NextRequest } from 'next/server'
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from './prisma'
+import { Role } from '@prisma/client'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret'
+// Types
+interface AuthUser {
+  id: string
+  email: string
+  name: string | null
+  phone: string | null
+  role: Role
+  isActive: boolean
+  emailVerified: boolean
+  walletBalance: number
+  currency: string
+  profileImage?: string | null
+  bkashNumber?: string | null
+  bkashVerified: boolean
+  nagadNumber?: string | null
+  nagadVerified: boolean
+  rocketNumber?: string | null
+  rocketVerified: boolean
+  createdAt: Date
+  updatedAt: Date
+}
 
+interface TokenPayload {
+  userId: string
+  email: string
+  role: Role
+  iat?: number
+  exp?: number
+}
+
+interface AuthResponse {
+  user: {
+    id: string
+    email: string
+    name: string | null
+    phone: string | null
+    role: Role
+    isActive: boolean
+    balance: number
+    emailVerified: boolean
+    currency: string
+  }
+  token?: string
+}
+
+interface MobileMoneyFees {
+  fee: number
+  total: number
+}
+
+// Constants
+const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-key'
+const TOKEN_EXPIRY = '7d'
+const BCRYPT_ROUNDS = 12
+
+// Validation patterns
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const PHONE_REGEX = /^\+?[1-9]\d{1,14}$/
+const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+
+// Fee rates for mobile money providers
+const MOBILE_MONEY_FEE_RATES = {
+  BKASH: 0.018,  // 1.8%
+  NAGAD: 0.015,  // 1.5%
+  ROCKET: 0.02,  // 2%
+  DEFAULT: 0.02  // 2%
+} as const
+
+// NextAuth Configuration
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -17,22 +87,64 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error('Email and password are required')
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        })
-
-        if (!user || !await verifyPassword(credentials.password, user.password)) {
-          return null
+        if (!validateEmail(credentials.email)) {
+          throw new Error('Invalid email format')
         }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email.toLowerCase() },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              phone: true,
+              password: true,
+              role: true,
+              isActive: true,
+              emailVerified: true,
+              lastLogin: true
+            }
+          })
+
+          if (!user) {
+            throw new Error('Invalid credentials')
+          }
+
+          if (!user.isActive) {
+            throw new Error('Account is deactivated. Please contact support.')
+          }
+
+          if (!user.password) {
+            throw new Error('Password not set. Please reset your password.')
+          }
+
+          const isValidPassword = await verifyPassword(credentials.password, user.password)
+          if (!isValidPassword) {
+            throw new Error('Invalid credentials')
+          }
+
+          // Update last login
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLogin: new Date() }
+          })
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            phone: user.phone,
+            role: user.role,
+            isActive: user.isActive,
+            emailVerified: user.emailVerified
+          }
+        } catch (error) {
+          console.error('Authentication error:', error)
+          throw error
         }
       }
     })
@@ -40,74 +152,148 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
     maxAge: 7 * 24 * 60 * 60, // 7 days
+    updateAge: 24 * 60 * 60,  // 24 hours
   },
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      name: process.env.NODE_ENV === 'production' 
+        ? '__Secure-next-auth.session-token' 
+        : 'next-auth.session-token',
       options: {
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain: process.env.NODE_ENV === 'production' ? undefined : undefined
+        domain: process.env.NODE_ENV === 'production' 
+          ? process.env.NEXTAUTH_URL?.includes('vercel.app') 
+            ? '.vercel.app' 
+            : undefined
+          : undefined
       }
     }
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: '/'
+    signIn: '/auth/signin',
+    error: '/auth/error'
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         token.role = (user as any).role
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.isActive = (user as any).isActive
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.emailVerified = (user as any).emailVerified
       }
+      
+      // Handle session updates
+      if (trigger === 'update' && session) {
+        return { ...token, ...session }
+      }
+      
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.sub
-        session.user.role = token.role as string
+      if (token && session.user) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).id = token.sub as string
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).role = token.role as Role
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).isActive = token.isActive as boolean
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).emailVerified = token.emailVerified as boolean
       }
       return session
+    },
+    async signIn({ user, account }) {
+      if (account?.provider === 'credentials') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (user as any).isActive === true
+      }
+      return true
+    }
+  },
+  events: {
+    async signIn({ user, account, isNewUser }) {
+      console.log(`User ${user.email} signed in via ${account?.provider}`)
+      if (isNewUser) {
+        console.log(`New user registered: ${user.email}`)
+      }
+    },
+    async signOut({ token }) {
+      console.log(`User ${token?.email} signed out`)
     }
   }
 }
 
+// Password utilities
 export async function hashPassword(password: string): Promise<string> {
-  const salt = await bcrypt.genSalt(12)
+  if (!password || password.length < 6) {
+    throw new Error('Password must be at least 6 characters long')
+  }
+  
+  const salt = await bcrypt.genSalt(BCRYPT_ROUNDS)
   return bcrypt.hash(password, salt)
 }
 
 export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-  return bcrypt.compare(password, hashedPassword)
-}
-
-export function generateToken(payload: any): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
-}
-
-export function verifyToken(token: string): any {
+  if (!password || !hashedPassword) {
+    return false
+  }
+  
   try {
-    return jwt.verify(token, JWT_SECRET)
+    return await bcrypt.compare(password, hashedPassword)
   } catch (error) {
+    console.error('Password verification error:', error)
+    return false
+  }
+}
+
+// JWT utilities
+export function generateToken(payload: TokenPayload): string {
+  if (!payload.userId || !payload.email) {
+    throw new Error('Invalid token payload')
+  }
+  
+  return jwt.sign(payload, JWT_SECRET, { 
+    expiresIn: TOKEN_EXPIRY,
+    issuer: 'money-transfer-app',
+    audience: 'money-transfer-users'
+  })
+}
+
+export function verifyToken(token: string): TokenPayload | null {
+  if (!token) {
+    return null
+  }
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET, {
+      issuer: 'money-transfer-app',
+      audience: 'money-transfer-users'
+    }) as TokenPayload
+    
+    return decoded
+  } catch (error) {
+    console.error('Token verification error:', error)
     return null
   }
 }
 
-export async function getUserFromToken(request: NextRequest) {
+// User authentication utilities
+export async function getUserFromToken(request: NextRequest): Promise<AuthUser | null> {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
-                 request.cookies.get('token')?.value
-
+    const token = extractToken(request)
+    
     if (!token) {
       return null
     }
 
     const decoded = verifyToken(token)
-    console.log('Decoded token:', decoded)
     if (!decoded || !decoded.userId) {
-      console.log('Invalid token or missing userId')
       return null
     }
 
@@ -120,38 +306,49 @@ export async function getUserFromToken(request: NextRequest) {
         phone: true,
         role: true,
         isActive: true,
+        emailVerified: true,
         walletBalance: true,
+        currency: true,
+        profileImage: true,
+        bkashNumber: true,
+        bkashVerified: true,
+        nagadNumber: true,
+        nagadVerified: true,
+        rocketNumber: true,
+        rocketVerified: true,
         createdAt: true,
         updatedAt: true,
       },
     })
 
-    console.log('User from token:', user)
-    console.log('Token payload userId:', decoded.userId, 'Found user:', user?.email)
-    return user
+    if (!user || !user.isActive) {
+      return null
+    }
+
+    return user as AuthUser
   } catch (error) {
     console.error('Error getting user from token:', error)
     return null
   }
 }
 
-export async function requireAuth(request: NextRequest) {
+export async function requireAuth(request: NextRequest): Promise<AuthUser> {
   const user = await getUserFromToken(request)
   if (!user) {
-    throw new Error('Unauthorized')
+    throw new Error('Authentication required')
   }
   return user
 }
 
-export async function requireAdmin(request: NextRequest) {
+export async function requireAdmin(request: NextRequest): Promise<AuthUser> {
   const user = await requireAuth(request)
-  if (user.role !== 'ADMIN') {
-    throw new Error('Admin access required')
+  if (user.role !== Role.ADMIN) {
+    throw new Error('Administrator access required')
   }
   return user
 }
 
-export async function requireActiveUser(request: NextRequest) {
+export async function requireActiveUser(request: NextRequest): Promise<AuthUser> {
   const user = await requireAuth(request)
   if (!user.isActive) {
     throw new Error('Account is deactivated')
@@ -159,18 +356,30 @@ export async function requireActiveUser(request: NextRequest) {
   return user
 }
 
+export async function requireVerifiedEmail(request: NextRequest): Promise<AuthUser> {
+  const user = await requireActiveUser(request)
+  if (!user.emailVerified) {
+    throw new Error('Email verification required')
+  }
+  return user
+}
+
+// Token extraction utility
 export function extractToken(request: NextRequest): string | null {
+  // Check Authorization header first
   const authHeader = request.headers.get('authorization')
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader?.startsWith('Bearer ')) {
     return authHeader.substring(7)
   }
   
+  // Check cookies as fallback
   const cookieToken = request.cookies.get('token')?.value
   return cookieToken || null
 }
 
-export function createAuthResponse(user: any, token?: string) {
-  const response = {
+// Response utilities
+export function createAuthResponse(user: AuthUser, token?: string): AuthResponse {
+  const response: AuthResponse = {
     user: {
       id: user.id,
       email: user.email,
@@ -179,47 +388,115 @@ export function createAuthResponse(user: any, token?: string) {
       role: user.role,
       isActive: user.isActive,
       balance: user.walletBalance,
+      emailVerified: user.emailVerified,
+      currency: user.currency,
     },
   }
 
   if (token) {
-    return {
-      ...response,
-      token,
-    }
+    response.token = token
   }
 
   return response
 }
 
+// Validation utilities
 export function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  if (!email || typeof email !== 'string') {
+    return false
+  }
+  return EMAIL_REGEX.test(email.trim().toLowerCase())
 }
 
 export function validatePhone(phone: string): boolean {
-  const phoneRegex = /^\+?[1-9]\d{1,14}$/
-  return phoneRegex.test(phone)
+  if (!phone || typeof phone !== 'string') {
+    return false
+  }
+  return PHONE_REGEX.test(phone.trim())
 }
 
-export function generateReference(provider?: string): string {
-  const timestamp = Date.now().toString(36)
-  const random = Math.random().toString(36).substring(2, 8)
-  const prefix = provider ? provider.substring(0, 2) : 'MM'
-  return `${prefix}${timestamp}${random}`.toUpperCase()
+export function validateStrongPassword(password: string): boolean {
+  if (!password || typeof password !== 'string') {
+    return false
+  }
+  return STRONG_PASSWORD_REGEX.test(password)
 }
 
-export function calculateMobileMoneyFees(amount: number, provider: string): { fee: number; total: number } {
-  // Default fee structure - can be made configurable
-  const feeRates = {
-    BKASH: 0.018, // 1.8%
-    NAGAD: 0.015, // 1.5%
-    ROCKET: 0.02, // 2%
+export function validatePassword(password: string): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  
+  if (!password) {
+    errors.push('Password is required')
+    return { isValid: false, errors }
   }
   
-  const rate = feeRates[provider as keyof typeof feeRates] || 0.02
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long')
+  }
+  
+  if (!/(?=.*[a-z])/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter')
+  }
+  
+  if (!/(?=.*[A-Z])/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter')
+  }
+  
+  if (!/(?=.*\d)/.test(password)) {
+    errors.push('Password must contain at least one number')
+  }
+  
+  if (!/(?=.*[@$!%*?&])/.test(password)) {
+    errors.push('Password must contain at least one special character (@$!%*?&)')
+  }
+  
+  return { isValid: errors.length === 0, errors }
+}
+
+// Business logic utilities
+export function generateReference(provider?: string): string {
+  const timestamp = Date.now().toString(36).toUpperCase()
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase()
+  const prefix = provider ? provider.substring(0, 2).toUpperCase() : 'MT'
+  return `${prefix}${timestamp}${random}`
+}
+
+export function calculateMobileMoneyFees(amount: number, provider: string): MobileMoneyFees {
+  if (amount <= 0) {
+    throw new Error('Amount must be greater than 0')
+  }
+  
+  const normalizedProvider = provider.toUpperCase() as keyof typeof MOBILE_MONEY_FEE_RATES
+  const rate = MOBILE_MONEY_FEE_RATES[normalizedProvider] || MOBILE_MONEY_FEE_RATES.DEFAULT
+  
   const fee = Math.round(amount * rate * 100) / 100 // Round to 2 decimal places
-  const total = amount + fee
+  const total = Math.round((amount + fee) * 100) / 100
   
   return { fee, total }
 }
+
+// Security utilities
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function sanitizeUserData(user: any): Partial<AuthUser> {
+  const {
+    password, // eslint-disable-line @typescript-eslint/no-unused-vars
+    emailOTP, // eslint-disable-line @typescript-eslint/no-unused-vars
+    emailOTPExpiry, // eslint-disable-line @typescript-eslint/no-unused-vars
+    ...sanitizedUser
+  } = user
+  
+  return sanitizedUser
+}
+
+export function isValidRole(role: string): role is Role {
+  return Object.values(Role).includes(role as Role)
+}
+
+// Rate limiting helper
+export function createRateLimitKey(identifier: string, action: string): string {
+  return `rate_limit:${action}:${identifier}`
+}
+
+// Export types for use in other files
+export type { AuthUser, TokenPayload, AuthResponse, MobileMoneyFees }
+export { Role }
