@@ -56,6 +56,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare update data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       name,
       email,

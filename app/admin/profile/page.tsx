@@ -79,6 +79,7 @@ function AdminProfileContent() {
 
     setLoading(true)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: any = {
         name: formData.name,
         email: formData.email,

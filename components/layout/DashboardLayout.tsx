@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
@@ -9,7 +9,7 @@ import { generateAvatar } from '@/lib/utils'
 import { useAuth } from '@/components/providers/AuthProvider'
 import {
   HomeIcon,
-  ArrowsRightLeftIcon,
+
   CreditCardIcon,
   UserIcon,
   Cog6ToothIcon,
@@ -19,7 +19,7 @@ import {
   BellIcon,
   SunIcon,
   MoonIcon,
-  StarIcon,
+
   ClockIcon,
 } from '@heroicons/react/24/outline'
 

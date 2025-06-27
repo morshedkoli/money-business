@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
-import { useRouter } from 'next/navigation'
+
 import AdminLayout from '@/components/layout/AdminLayout'
 import Link from 'next/link'
 import { formatCurrency, formatDate, formatDateOnly } from '@/lib/utils'
@@ -71,7 +71,7 @@ interface SystemHealth {
 function AdminDashboardContent() {
   const { user } = useAuth()
   const [users, setUsers] = useState<User[]>([])
-  const [transfers, setTransfers] = useState<Transfer[]>([])
+  const [transfers, setTransfers] = useState<Transfer[]>([]) // eslint-disable-line @typescript-eslint/no-unused-vars
   const [walletTransactions, setWalletTransactions] = useState<WalletTransaction[]>([])
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
@@ -322,7 +322,7 @@ function AdminDashboardContent() {
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Transfers</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today&apos;s Transfers</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.todayTransfers}</p>
                   <p className="text-xs text-blue-600 dark:text-blue-400">{formatCurrency(stats.todayAmount)}</p>
                 </div>

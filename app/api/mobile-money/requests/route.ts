@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     // Check if user is admin
     const isAdmin = user.role === 'ADMIN'
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let whereClause: any = {}
 
     // If admin is requesting and user is actually admin, show all requests

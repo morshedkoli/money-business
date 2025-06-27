@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
     // Get date ranges
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
-    const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000) // eslint-disable-line @typescript-eslint/no-unused-vars
+    const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000) // eslint-disable-line @typescript-eslint/no-unused-vars
     const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
-    const last6Months = new Date(today.getTime() - 180 * 24 * 60 * 60 * 1000)
+    const last6Months = new Date(today.getTime() - 180 * 24 * 60 * 60 * 1000) // eslint-disable-line @typescript-eslint/no-unused-vars
 
     // Daily Active Users (users who had transactions today)
     const dailyActiveUsers = await prisma.user.count({

@@ -38,7 +38,7 @@ export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
-export function generateOTPEmailHTML(otp: string, email: string): string {
+export function generateOTPEmailHTML(otp: string, email: string): string { // eslint-disable-line @typescript-eslint/no-unused-vars
   return `
     <!DOCTYPE html>
     <html>

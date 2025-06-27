@@ -241,7 +241,7 @@ function AnalyticsContent() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Transfers</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today&apos;s Transfers</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{data.additionalStats.todayTransfers}</p>
             </div>
           </div>
@@ -255,7 +255,7 @@ function AnalyticsContent() {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today's Volume</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Today&apos;s Volume</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(data.additionalStats.todayAmount)}</p>
             </div>
           </div>

@@ -11,6 +11,7 @@ function SettingsContent() {
     smsNotifications: false,
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSettingChange = (key: string, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }))
   }

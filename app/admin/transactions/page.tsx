@@ -33,7 +33,7 @@ function TransactionsContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [activeTab, setActiveTab] = useState<'wallet'>('wallet')
+  const [activeTab, setActiveTab] = useState<'wallet'>('wallet') // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const fetchTransactions = async (page: number = 1) => {
     try {

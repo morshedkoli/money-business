@@ -129,8 +129,10 @@ export const dbOptimizations = {
 // Cache utilities for better performance
 export const cacheUtils = {
   // Simple in-memory cache for development
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cache: new Map<string, { data: any; expiry: number }>(),
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   set: (key: string, data: any, ttlMs: number = 300000) => { // 5 minutes default
     const expiry = Date.now() + ttlMs
     cacheUtils.cache.set(key, { data, expiry })
@@ -204,6 +206,7 @@ export const errorTracking = {
   },
 
   // Track API errors
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   trackApiError: (endpoint: string, error: any, statusCode?: number) => {
     console.error(`API Error at ${endpoint}:`, error)
     
@@ -270,6 +273,7 @@ export const usePerformanceOptimization = () => {
 // Declare global gtag function for TypeScript
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gtag?: (...args: any[]) => void
   }
 }

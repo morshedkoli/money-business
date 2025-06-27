@@ -93,7 +93,7 @@ function FeeSettingsContent() {
     }
 
     fetchFeeSettings()
-  }, [])
+  }, [setValue])
 
   const onSubmit = async (data: FeeSettingsForm) => {
     setIsLoading(true)

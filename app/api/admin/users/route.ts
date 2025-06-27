@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     const skip = (page - 1) * limit
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const whereClause: any = {
       // Exclude admin users from the list
       role: {

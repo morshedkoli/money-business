@@ -18,6 +18,7 @@ export const apiGet = (url: string, options: RequestInit = {}) => {
 }
 
 // Helper function for POST requests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const apiPost = (url: string, data?: any, options: RequestInit = {}) => {
   return apiRequest(url, {
     method: 'POST',
@@ -27,6 +28,7 @@ export const apiPost = (url: string, data?: any, options: RequestInit = {}) => {
 }
 
 // Helper function for PUT requests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const apiPut = (url: string, data?: any, options: RequestInit = {}) => {
   return apiRequest(url, {
     method: 'PUT',

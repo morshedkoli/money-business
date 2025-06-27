@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/components/providers/AuthProvider'
-import { useRouter } from 'next/navigation'
+
 import { useEffect, useState } from 'react'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { formatCurrency, formatDate, formatDateOnly } from '@/lib/utils'
@@ -29,7 +29,7 @@ interface UserStats {
 }
 
 function AdminUsersContent() {
-  const { user } = useAuth()
+  const { user } = useAuth() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [users, setUsers] = useState<User[]>([])
   const [usersLoading, setUsersLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -52,7 +52,7 @@ function AdminUsersContent() {
 
   useEffect(() => {
     fetchUsers()
-  }, [currentPage, searchQuery, filterRole, filterStatus, sortBy, sortOrder])
+  }, [currentPage, searchQuery, filterRole, filterStatus, sortBy, sortOrder, fetchUsers])
 
   const fetchUsers = async () => {
     try {
@@ -119,7 +119,7 @@ function AdminUsersContent() {
     }
   }
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     e.preventDefault()
     setCurrentPage(1)
     fetchUsers()

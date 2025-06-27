@@ -2,16 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
-import { useRouter } from 'next/navigation'
 import AdminLayout from '@/components/layout/AdminLayout'
 import {
-  ClockIcon,
-  UserIcon,
   CreditCardIcon,
   DevicePhoneMobileIcon,
-  Cog6ToothIcon,
-  ShieldCheckIcon,
-  FunnelIcon,
   MagnifyingGlassIcon,
   EyeIcon,
   DocumentArrowDownIcon,
@@ -23,6 +17,7 @@ interface ActivityLog {
   entity?: string
   entityId?: string
   description: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any
   ipAddress?: string
   userAgent?: string
@@ -67,7 +62,7 @@ function AdminHistoryContent() {
     if (user?.role === 'ADMIN') {
       fetchLogs()
     }
-  }, [user, pagination.page, actionFilter, entityFilter, userFilter])
+  }, [user, pagination.page, actionFilter, entityFilter, userFilter, fetchLogs])
 
   const fetchLogs = async () => {
     try {

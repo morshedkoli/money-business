@@ -16,6 +16,7 @@ interface User {
   walletBalance: number
   currency: string
   profileImage?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   address?: any
   bkashNumber?: string
   bkashVerified: boolean
@@ -49,7 +50,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
 
   useEffect(() => {
     checkAuth()

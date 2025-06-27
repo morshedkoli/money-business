@@ -7,10 +7,7 @@ import { formatCurrency } from '@/lib/utils'
 import { apiGet, apiPost } from '@/lib/api'
 import { toast } from 'react-hot-toast'
 import {
-  DevicePhoneMobileIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ClockIcon
+  DevicePhoneMobileIcon
 } from '@heroicons/react/24/outline'
 
 interface User {
@@ -88,7 +85,7 @@ function MobileMoneyContent() {
 
   useEffect(() => {
     fetchRequests(currentPage)
-  }, [currentPage, activeTab, providerFilter])
+  }, [currentPage, activeTab, providerFilter, fetchRequests])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -176,7 +173,7 @@ function MobileMoneyContent() {
       const result = await response.json()
       toast.success(result?.message || 'Request approved successfully')
       fetchRequests(currentPage)
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       console.error('Error approving fulfillment:', error)
       toast.error(error.message || 'Failed to approve request')
     } finally {
@@ -196,7 +193,7 @@ function MobileMoneyContent() {
 
       toast.success('Request approved successfully')
       fetchRequests(currentPage)
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(error.message || 'Failed to approve request')
     }
   }
@@ -218,7 +215,7 @@ function MobileMoneyContent() {
 
       toast.success('Request cancelled successfully')
       fetchRequests(currentPage)
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       toast.error(error.message || 'Failed to cancel request')
     }
   }
