@@ -270,6 +270,26 @@ export function verifyToken(token: string): TokenPayload | null {
     return null
   }
   
+  // Basic token format validation before JWT verification
+  if (typeof token !== 'string' || token.trim().length === 0) {
+    console.log('Invalid token format: empty or non-string')
+    return null
+  }
+  
+  // Check if token has basic JWT structure (3 parts separated by dots)
+  const tokenParts = token.split('.')
+  if (tokenParts.length !== 3) {
+    console.log('Invalid token format: not a valid JWT structure')
+    return null
+  }
+  
+  // Check if each part is base64-like (contains valid characters)
+  const base64Regex = /^[A-Za-z0-9_-]+$/
+  if (!tokenParts.every(part => base64Regex.test(part))) {
+    console.log('Invalid token format: contains invalid characters')
+    return null
+  }
+  
   try {
     const decoded = jwt.verify(token, JWT_SECRET, {
       issuer: 'money-transfer-app',
@@ -289,13 +309,20 @@ export async function getUserFromToken(request: NextRequest): Promise<AuthUser |
     const token = extractToken(request)
     
     if (!token) {
+      console.log('getUserFromToken: No token extracted')
       return null
     }
 
+    console.log('getUserFromToken: Token extracted, length:', token.length)
+    console.log('getUserFromToken: Token preview:', token.substring(0, 20) + '...')
+
     const decoded = verifyToken(token)
     if (!decoded || !decoded.userId) {
+      console.log('getUserFromToken: Token verification failed or no userId')
       return null
     }
+
+    console.log('getUserFromToken: Token verified for userId:', decoded.userId)
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -366,15 +393,35 @@ export async function requireVerifiedEmail(request: NextRequest): Promise<AuthUs
 
 // Token extraction utility
 export function extractToken(request: NextRequest): string | null {
+  let token: string | null = null
+  
   // Check Authorization header first
   const authHeader = request.headers.get('authorization')
   if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.substring(7)
+    token = authHeader.substring(7).trim()
   }
   
   // Check cookies as fallback
-  const cookieToken = request.cookies.get('token')?.value
-  return cookieToken || null
+  if (!token) {
+    const cookieToken = request.cookies.get('token')?.value
+    token = cookieToken?.trim() || null
+  }
+  
+  // Basic validation before returning
+  if (!token || token.length === 0) {
+    return null
+  }
+  
+  // Remove any potential whitespace or invalid characters
+  token = token.replace(/\s/g, '')
+  
+  // Basic format check - JWT should have 3 parts
+  if (token.split('.').length !== 3) {
+    console.log('Extracted token has invalid JWT format')
+    return null
+  }
+  
+  return token
 }
 
 // Response utilities

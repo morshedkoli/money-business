@@ -184,23 +184,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         // Successfully logged out on server
         toast.success('Logged out successfully')
-        // Force a hard refresh to clear all cached data
-        window.location.href = '/'
+        // Force a hard refresh to clear all cached data (client-side only)
+        if (typeof window !== 'undefined') {
+          window.location.href = '/'
+        }
       } else {
         // Server logout failed, but local state is already cleared
         // eslint-disable-next-line no-console
         console.error('Server logout failed, but clearing local session')
         toast.error('Logout may not have completed properly. Please clear your browser cookies if you continue to have issues.')
-        // Force a hard refresh to clear all cached data
-        window.location.href = '/'
+        // Force a hard refresh to clear all cached data (client-side only)
+        if (typeof window !== 'undefined') {
+          window.location.href = '/'
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Logout error:', error)
       // Local state is already cleared
       toast.error('Logout error occurred. Please clear your browser cookies if you continue to have issues.')
-      // Force a hard refresh to clear all cached data
-      window.location.href = '/'
+      // Force a hard refresh to clear all cached data (client-side only)
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
     }
   }
 
