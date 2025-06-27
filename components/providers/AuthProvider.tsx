@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      // Log logout activity before clearing user data
+      // Log logout activity before clearing user state
       if (user) {
         await logActivity({
           action: ACTIVITY_TYPES.LOGOUT,
@@ -172,6 +172,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
       }
       
+      // Clear local state immediately for better UX
+      setUser(null)
+      
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include', // Include cookies in the request
@@ -179,24 +182,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok) {
         // Successfully logged out on server
-        setUser(null)
-        router.push('/')
         toast.success('Logged out successfully')
+        // Force a hard refresh to clear all cached data
+        window.location.href = '/'
       } else {
-        // Server logout failed, but still clear local state for security
+        // Server logout failed, but local state is already cleared
         // eslint-disable-next-line no-console
         console.error('Server logout failed, but clearing local session')
-        setUser(null)
-        router.push('/')
         toast.error('Logout may not have completed properly. Please clear your browser cookies if you continue to have issues.')
+        // Force a hard refresh to clear all cached data
+        window.location.href = '/'
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Logout error:', error)
-      // Even if logout fails, clear local state for security
-      setUser(null)
-      router.push('/')
+      // Local state is already cleared
       toast.error('Logout error occurred. Please clear your browser cookies if you continue to have issues.')
+      // Force a hard refresh to clear all cached data
+      window.location.href = '/'
     }
   }
 

@@ -23,23 +23,42 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 0, // Expire immediately
-      path: '/',
-      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
+      path: '/'
     } as const
 
-    // Clear the token cookie
+    // Clear the token cookie with multiple domain variations for Vercel compatibility
     response.cookies.set('token', '', cookieOptions)
+    response.cookies.set('token', '', { ...cookieOptions, domain: undefined })
     
-    // Also try to clear with different path variations for better compatibility
-    response.cookies.set('token', '', { ...cookieOptions, path: '/' })
-    response.cookies.set('token', '', { ...cookieOptions, path: '', domain: undefined })
-
-    // Clear NextAuth.js session cookies
-    if (session) {
-      response.cookies.set('next-auth.session-token', '', { ...cookieOptions })
-      response.cookies.set('next-auth.csrf-token', '', { ...cookieOptions })
-      response.cookies.set('next-auth.callback-url', '', { ...cookieOptions })
+    // For Vercel deployments, also clear with specific domain patterns
+    if (process.env.NODE_ENV === 'production') {
+      const host = request.headers.get('host')
+      if (host) {
+        // Clear for the exact domain
+        response.cookies.set('token', '', { ...cookieOptions, domain: host })
+        // Clear for subdomain pattern if it's a vercel.app domain
+        if (host.includes('.vercel.app')) {
+          response.cookies.set('token', '', { ...cookieOptions, domain: '.vercel.app' })
+        }
+      }
     }
+
+    // Clear NextAuth.js session cookies with same domain variations
+    const nextAuthCookies = ['next-auth.session-token', 'next-auth.csrf-token', 'next-auth.callback-url']
+    nextAuthCookies.forEach(cookieName => {
+      response.cookies.set(cookieName, '', cookieOptions)
+      response.cookies.set(cookieName, '', { ...cookieOptions, domain: undefined })
+      
+      if (process.env.NODE_ENV === 'production') {
+        const host = request.headers.get('host')
+        if (host) {
+          response.cookies.set(cookieName, '', { ...cookieOptions, domain: host })
+          if (host.includes('.vercel.app')) {
+            response.cookies.set(cookieName, '', { ...cookieOptions, domain: '.vercel.app' })
+          }
+        }
+      }
+    })
 
     console.log('Logout successful, cookie cleared')
     return response

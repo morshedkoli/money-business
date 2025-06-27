@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 // Rate limiting store (in production, use Redis or similar)
 const rateLimit = new Map()
