@@ -36,7 +36,7 @@ export default function ResetPasswordForm() {
       } else {
         setError(result.message || 'Failed to send verification code')
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -51,7 +51,7 @@ export default function ResetPasswordForm() {
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Reset your password</h3>
         <p className="text-sm text-gray-600">
-          Enter your email address and we'll send you a verification code to reset your password.
+          Enter your email address and we&apos;ll send you a verification code to reset your password.
         </p>
       </div>
 

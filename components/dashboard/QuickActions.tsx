@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import {
-  ArrowsRightLeftIcon,
   CreditCardIcon,
   DocumentTextIcon,
   UserGroupIcon,

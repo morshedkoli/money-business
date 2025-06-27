@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+// import { getServerSession } from 'next-auth/next'
+// import { authOptions } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the NextAuth session
-    const session = await getServerSession(authOptions)
+    // Get the NextAuth session (not needed for logout)
+    // const session = await getServerSession(authOptions)
 
     // Create response with cache control headers
     const response = NextResponse.json({

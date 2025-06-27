@@ -19,7 +19,6 @@ import {
   InformationCircleIcon,
   CurrencyDollarIcon,
   ShieldCheckIcon,
-  UserIcon,
 } from '@heroicons/react/24/outline'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -32,7 +31,7 @@ interface Notification {
   createdAt: string
   priority: 'low' | 'medium' | 'high' | 'urgent'
   actionUrl?: string
-  metadata?: any
+  metadata?: Record<string, unknown>
 }
 
 const mockNotifications: Notification[] = [

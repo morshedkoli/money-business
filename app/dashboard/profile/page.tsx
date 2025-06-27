@@ -59,7 +59,6 @@ export default function DashboardProfilePage() {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
     setValue,
   } = useForm<ProfileFormData>()
 

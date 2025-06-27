@@ -54,7 +54,7 @@ export default function VerifyResetPasswordForm() {
       } else {
         setError(result.message || 'Invalid verification code')
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -94,7 +94,7 @@ export default function VerifyResetPasswordForm() {
       } else {
         setError(result.message || 'Failed to reset password')
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -122,7 +122,7 @@ export default function VerifyResetPasswordForm() {
       } else {
         setError(result.message || 'Failed to resend verification code')
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -217,7 +217,7 @@ export default function VerifyResetPasswordForm() {
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Check your email</h3>
             <p className="text-sm text-gray-600">
-              We've sent a 6-digit verification code to<br />
+              We&apos;ve sent a 6-digit verification code to<br />
               <span className="font-medium">{email}</span>
             </p>
           </div>
@@ -257,7 +257,7 @@ export default function VerifyResetPasswordForm() {
 
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
-              Didn't receive the code?{' '}
+              Didn&apos;t receive the code?{' '}
               <button
                 onClick={handleResendOTP}
                 disabled={resendCooldown > 0 || loading}

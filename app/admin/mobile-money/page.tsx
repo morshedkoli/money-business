@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import AdminLayout from '@/components/layout/AdminLayout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { formatCurrency } from '@/lib/utils'
@@ -53,7 +53,7 @@ function MobileMoneyContent() {
   const [providerFilter, setProviderFilter] = useState<string>('ALL')
   const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null)
 
-  const fetchRequests = async (page: number = 1) => {
+  const fetchRequests = useCallback(async (page: number = 1) => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -81,7 +81,7 @@ function MobileMoneyContent() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeTab, providerFilter])
 
   useEffect(() => {
     fetchRequests(currentPage)

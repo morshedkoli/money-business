@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       })
 
       // Send password reset OTP email
-      const emailHTML = generatePasswordResetOTPEmailHTML(otp, email)
+      const emailHTML = generatePasswordResetOTPEmailHTML(otp)
       const emailResult = await sendEmail({
         to: email,
         subject: 'Password Reset - Money Transfer App',
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to generate password reset OTP email HTML
-function generatePasswordResetOTPEmailHTML(otp: string, email: string): string {
+function generatePasswordResetOTPEmailHTML(otp: string): string {
   return `
     <!DOCTYPE html>
     <html>

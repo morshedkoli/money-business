@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     const token = generateToken({ userId: user.id, email: user.email, role: user.role })
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user
+    const { password, ...userWithoutPassword } = user
 
     // Create response with user data
     const response = NextResponse.json({

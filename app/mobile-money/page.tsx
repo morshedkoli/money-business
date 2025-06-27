@@ -375,7 +375,7 @@ export default function MobileMoneyPage() {
                   <div className="text-center py-8">
                     <DevicePhoneMobileIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No requests found</h3>
-                    <p className="text-gray-500">You haven't created any mobile money requests yet.</p>
+                    <p className="text-gray-500">You haven&apos;t created any mobile money requests yet.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">

@@ -59,7 +59,7 @@ export default function HomePage() {
         </div>
         
         <div className="text-center text-sm text-gray-600">
-          <p>Don't have an account? <Link href="/register" className="text-primary-600 hover:text-primary-500 font-medium">Sign up</Link></p>
+          <p>Don&apos;t have an account? <Link href="/register" className="text-primary-600 hover:text-primary-500 font-medium">Sign up</Link></p>
         </div>
         
         <div className="text-center text-xs text-gray-500">

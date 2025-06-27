@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -99,19 +99,13 @@ export default function DashboardMobileMoneyPage() {
     }
   }, [user, loading, mounted, router])
 
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData()
-    }
-  }, [user])
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setIsLoading(true)
     try {
       // Fetch dashboard stats
       const dashboardResponse = await apiGet('/api/mobile-money/dashboard')
       const dashboardData = await dashboardResponse.json()
-      setStats(dashboardData.stats || stats)
+      setStats(prevStats => dashboardData.stats || prevStats)
       
       // Fetch all user requests
       const requestsResponse = await apiGet('/api/mobile-money/requests?limit=50')
@@ -124,7 +118,13 @@ export default function DashboardMobileMoneyPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData()
+    }
+  }, [user, fetchDashboardData])
 
   if (!mounted || loading) {
     return (
@@ -334,7 +334,7 @@ export default function DashboardMobileMoneyPage() {
                 {allRequests.length === 0 ? (
                   <>
                     <h3 className="mobile-subtitle text-gray-900 dark:text-white mb-2">No requests found</h3>
-                    <p className="mobile-body text-gray-500 dark:text-gray-400 mb-6">You haven't created any mobile money requests yet.</p>
+                    <p className="mobile-body text-gray-500 dark:text-gray-400 mb-6">You haven&apos;t created any mobile money requests yet.</p>
                     <Link
                       href="/dashboard/mobile-money/request"
                       className="btn btn-primary touch-target inline-flex items-center"

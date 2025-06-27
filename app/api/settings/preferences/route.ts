@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+interface UpdateData {
+  currency?: string
+  preferences?: {
+    upsert: {
+      create: {
+        theme: string
+        language: string
+        timezone: string
+      }
+      update: {
+        theme?: string
+        language?: string
+        timezone?: string
+      }
+    }
+  }
+}
+
 export async function PUT(request: NextRequest) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '')
@@ -30,7 +48,7 @@ export async function PUT(request: NextRequest) {
     } = body
 
     // Update user preferences
-    const updateData: any = {}
+    const updateData: UpdateData = {}
     
     if (currency !== undefined) {
       updateData.currency = currency

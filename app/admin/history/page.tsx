@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import AdminLayout from '@/components/layout/AdminLayout'
 import {
@@ -9,6 +9,9 @@ import {
   MagnifyingGlassIcon,
   EyeIcon,
   DocumentArrowDownIcon,
+  ShieldCheckIcon,
+  Cog6ToothIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline'
 
 interface ActivityLog {
@@ -58,13 +61,7 @@ function AdminHistoryContent() {
   const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
-  useEffect(() => {
-    if (user?.role === 'ADMIN') {
-      fetchLogs()
-    }
-  }, [user, pagination.page, actionFilter, entityFilter, userFilter, fetchLogs])
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
       setIsLoading(true)
       const token = localStorage.getItem('token')
@@ -93,7 +90,13 @@ function AdminHistoryContent() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [pagination.page, pagination.limit, actionFilter, entityFilter, userFilter])
+
+  useEffect(() => {
+    if (user?.role === 'ADMIN') {
+      fetchLogs()
+    }
+  }, [user, fetchLogs])
 
   const exportLogs = async () => {
     try {

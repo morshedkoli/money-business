@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/components/providers/AuthProvider'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { formatCurrency, formatDate, formatDateOnly } from '@/lib/utils'
 import Link from 'next/link'
@@ -54,7 +54,7 @@ function AdminUsersContent() {
     fetchUsers()
   }, [currentPage, searchQuery, filterRole, filterStatus, sortBy, sortOrder, fetchUsers])
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setUsersLoading(true)
       const params = new URLSearchParams({
@@ -92,7 +92,7 @@ function AdminUsersContent() {
     } finally {
       setUsersLoading(false)
     }
-  }
+  }, [currentPage, searchQuery, filterRole, filterStatus, sortBy, sortOrder])
 
   const toggleUserStatus = async (userId: string, currentStatus: boolean) => {
     try {

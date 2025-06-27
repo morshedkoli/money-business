@@ -10,9 +10,6 @@ import {
   CogIcon,
   BellIcon,
   ShieldCheckIcon,
-  DevicePhoneMobileIcon,
-  EyeIcon,
-  EyeSlashIcon,
   TrashIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
@@ -197,7 +194,7 @@ export default function SettingsPage() {
     updateSecuritySettings(newSettings)
   }
 
-  const handlePreferenceChange = async (key: keyof PreferenceSettings, value: any) => {
+  const handlePreferenceChange = async (key: keyof PreferenceSettings, value: string | boolean | number) => {
     const updatedPreferences = { ...preferences, [key]: value }
     setPreferences(updatedPreferences)
 
@@ -218,7 +215,7 @@ export default function SettingsPage() {
     }
   }
 
-  const handlePrivacyChange = async (key: keyof PrivacySettings, value: any) => {
+  const handlePrivacyChange = async (key: keyof PrivacySettings, value: string | boolean | number) => {
     const updatedPrivacy = { ...privacy, [key]: value }
     setPrivacy(updatedPrivacy)
 
@@ -585,7 +582,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <label className="text-sm font-medium text-gray-700">Show Online Status</label>
-                  <p className="text-sm text-gray-500">Let others see when you're online</p>
+                  <p className="text-sm text-gray-500">Let others see when you&apos;re online</p>
                 </div>
                 <button
                   onClick={() => handlePrivacyChange('showOnlineStatus', !privacy.showOnlineStatus)}
@@ -655,7 +652,7 @@ export default function SettingsPage() {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-red-800 mb-2">
-                            Type "DELETE" to confirm:
+                            Type &quot;DELETE&quot; to confirm:
                           </label>
                           <input
                             type="text"

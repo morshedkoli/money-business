@@ -5,47 +5,18 @@ import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { useForm } from 'react-hook-form'
-import toast from 'react-hot-toast'
-import { formatCurrency } from '@/lib/utils'
 import {
   DevicePhoneMobileIcon,
-  CurrencyDollarIcon,
   ArrowLeftIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  XCircleIcon,
-  DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
-interface MobileMoneyRequestFormData {
-  provider: string
-  phoneNumber: string
-  amount: number
-  description: string
-}
-
-interface MobileMoneyRequest {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface MobileMoneyProvider {
   id: string
-  provider: string
-  phoneNumber: string
-  amount: number
-  description: string
-  status: 'PENDING' | 'ACCEPTED'
-  createdAt: string
-  updatedAt: string
-  fulfillerId?: string
-  requester?: {
-    id: string
-    name: string
-    email: string
-  }
-  fulfiller?: {
-    id: string
-    name: string
-    email: string
-  }
+  name: string
+  color: string
+  textColor: string
 }
 
 const mobileMoneyProviders = [
@@ -54,35 +25,10 @@ const mobileMoneyProviders = [
   { id: 'rocket', name: 'Rocket', color: 'bg-purple-500', textColor: 'text-purple-700' },
 ]
 
-const requestSteps = [
-  { id: 1, title: 'Provider', description: 'Select mobile money provider' },
-  { id: 2, title: 'Details', description: 'Enter request details' },
-  { id: 3, title: 'Review', description: 'Confirm request details' },
-  { id: 4, title: 'Submit', description: 'Request submitted' },
-]
-
 export default function MobileMoneyRequestPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [requestSubmitted, setRequestSubmitted] = useState(false)
-  const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null)
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-    reset,
-  } = useForm<MobileMoneyRequestFormData>()
-
-  const selectedProvider = watch('provider')
-  const phoneNumber = watch('phoneNumber')
-  const amount = watch('amount')
-  const description = watch('description')
 
   useEffect(() => {
     setMounted(true)
@@ -99,119 +45,7 @@ export default function MobileMoneyRequestPage() {
 
 
 
-  const selectProvider = (providerId: string) => {
-    setValue('provider', providerId)
-  }
 
-  const nextStep = () => {
-    if (currentStep === 1 && !selectedProvider) {
-      toast.error('Please select a mobile money provider')
-      return
-    }
-    if (currentStep === 2) {
-      if (!phoneNumber || !amount) {
-        toast.error('Please fill in all required fields')
-        return
-      }
-      if (amount <= 0) {
-        toast.error('Amount must be greater than 0')
-        return
-      }
-    }
-    setCurrentStep(prev => Math.min(prev + 1, 4))
-  }
-
-  const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1))
-  }
-
-  const onSubmit = async () => {
-    if (!selectedProvider || !phoneNumber || !amount) {
-      toast.error('Please complete all required fields')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('/api/mobile-money/requests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          provider: selectedProvider,
-          recipientNumber: phoneNumber,
-          amount: amount,
-          description: description || '',
-        }),
-      })
-
-      const result = await response.json()
-
-      if (response.ok) {
-        setSubmittedRequestId(result.requestId || 'success')
-        setRequestSubmitted(true)
-        setCurrentStep(4)
-        toast.success('Mobile money request submitted successfully!')
-      } else {
-        toast.error(result.message || 'Request submission failed')
-      }
-    } catch (error) {
-      console.error('Request submission error:', error)
-      toast.error('Request submission failed. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const startNewRequest = () => {
-    reset()
-    setCurrentStep(1)
-    setRequestSubmitted(false)
-    setSubmittedRequestId(null)
-  }
-
-  const getProviderInfo = (providerId: string) => {
-    return mobileMoneyProviders.find(p => p.id === providerId)
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return <ClockIcon className="h-5 w-5 text-yellow-500" />
-      case 'ACCEPTED':
-        return <CheckCircleIcon className="h-5 w-5 text-green-500" />
-
-      default:
-        return <ClockIcon className="h-5 w-5 text-gray-500" />
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'ACCEPTED':
-        return 'bg-green-100 text-green-800'
-
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const maskPhoneNumber = (phoneNumber: string) => {
-    if (phoneNumber.length <= 4) return phoneNumber
-    const start = phoneNumber.slice(0, 2)
-    const end = phoneNumber.slice(-2)
-    const middle = '*'.repeat(phoneNumber.length - 4)
-    return start + middle + end
-  }
-
-  const canSeeFullNumber = (request: MobileMoneyRequest) => {
-    return request.requester?.id === user?.id || request.fulfillerId === user?.id
-  }
 
   if (!mounted || loading) {
     return (

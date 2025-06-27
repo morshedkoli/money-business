@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -64,13 +64,7 @@ export default function BrowseRequestsPage() {
     }
   }, [user, loading, mounted, router])
 
-  useEffect(() => {
-    if (user) {
-      fetchRequests()
-    }
-  }, [user, filter])
-
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       setIsLoading(true)
       const params = new URLSearchParams()
@@ -134,7 +128,13 @@ export default function BrowseRequestsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [user, filter])
+
+  useEffect(() => {
+    if (user) {
+      fetchRequests()
+    }
+  }, [user, filter, fetchRequests])
 
   const acceptRequest = async (requestId: string) => {
     try {
@@ -149,9 +149,9 @@ export default function BrowseRequestsPage() {
       // Refresh the requests list
       await fetchRequests()
       toast.success('Request accepted successfully!')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error accepting request:', error)
-      toast.error(error.message || 'An error occurred while accepting the request')
+      toast.error(error instanceof Error ? error.message : 'An error occurred while accepting the request')
     } finally {
       setAcceptingRequestId(null)
     }
@@ -228,9 +228,9 @@ export default function BrowseRequestsPage() {
 
       toast.success('Fulfillment details submitted successfully! Waiting for admin verification.')
       await fetchRequests() // Refresh the requests
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Fulfill request error:', error)
-      toast.error(error.message || 'Failed to submit fulfillment details')
+      toast.error(error instanceof Error ? error.message : 'Failed to submit fulfillment details')
     } finally {
       setFulfillingRequestId(null)
     }
@@ -287,7 +287,7 @@ export default function BrowseRequestsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Mobile Money Requests</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage your mobile money requests and view requests you've accepted. Track the status of your own requests and help others complete their transactions.
+            Manage your mobile money requests and view requests you&apos;ve accepted. Track the status of your own requests and help others complete their transactions.
           </p>
         </div>
 
@@ -305,7 +305,7 @@ export default function BrowseRequestsPage() {
               ].map((tab) => (
                 <button
                   key={tab.key}
-                  onClick={() => setFilter(tab.key as any)}
+                  onClick={() => setFilter(tab.key as 'all' | 'my-requests' | 'accepted-by-me' | 'pending' | 'accepted' | 'verified')}
                   className={`mobile-tab touch-target ${
                     filter === tab.key ? 'active' : ''
                   }`}

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 // Get current active fee settings (public endpoint)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Get active fee settings
     let feeSettings = await prisma.feeSettings.findFirst({

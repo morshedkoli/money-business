@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -19,9 +19,9 @@ import {
   XMarkIcon,
   DevicePhoneMobileIcon,
   ShieldCheckIcon,
-  CurrencyDollarIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 
 interface UserProfile {
   id: string
@@ -86,7 +86,6 @@ export default function DashboardUsersPage() {
   const {
     register: registerMobileMoney,
     handleSubmit: handleSubmitMobileMoney,
-    formState: { errors: mobileMoneyErrors },
     reset: resetMobileMoney,
   } = useForm<MobileMoneyFormData>()
 
@@ -107,9 +106,9 @@ export default function DashboardUsersPage() {
     if (user) {
       fetchUserProfile()
     }
-  }, [user])
+  }, [user, fetchUserProfile])
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     setIsLoading(true)
     try {
       const token = localStorage.getItem('token')
@@ -148,7 +147,7 @@ export default function DashboardUsersPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [resetProfile, resetMobileMoney])
 
   const onSubmitProfile = async (data: ProfileFormData) => {
     setIsUpdating(true)
@@ -284,9 +283,11 @@ export default function DashboardUsersPage() {
                 <div className="relative">
                   <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center">
                     {userProfile?.profileImage ? (
-                      <img
+                      <Image
                         src={userProfile.profileImage}
                         alt="Profile"
+                        width={80}
+                        height={80}
                         className="w-20 h-20 rounded-full object-cover"
                       />
                     ) : (

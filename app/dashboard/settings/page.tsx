@@ -10,14 +10,10 @@ import {
   Cog6ToothIcon,
   BellIcon,
   ShieldCheckIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   SunIcon,
   MoonIcon,
   GlobeAltIcon,
-  CurrencyDollarIcon,
   TrashIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
@@ -120,7 +116,7 @@ export default function SettingsPage() {
       } else {
         toast.error('Failed to update settings')
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update settings')
     } finally {
       setIsUpdating(false)
@@ -146,7 +142,7 @@ export default function SettingsPage() {
       } else {
         toast.error('Failed to update settings')
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update settings')
     } finally {
       setIsUpdating(false)
@@ -190,7 +186,7 @@ export default function SettingsPage() {
       } else {
         toast.error('Failed to update preferences')
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to update preferences')
     } finally {
       setIsUpdating(false)
@@ -214,7 +210,7 @@ export default function SettingsPage() {
       } else {
         toast.error('Failed to delete account')
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete account')
     }
   }

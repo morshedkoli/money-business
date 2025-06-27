@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '@/components/providers/AuthProvider'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { useRouter } from 'next/navigation'
 
 interface RegisterFormData {
   name: string
@@ -20,7 +19,6 @@ export default function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
   const { login } = useAuth()
   
   const {

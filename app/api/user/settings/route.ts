@@ -30,6 +30,15 @@ export async function GET(request: NextRequest) {
     const token = authHeader.substring(7)
     const decoded = verify(token, JWT_SECRET) as { userId: string }
 
+    // Validate the user exists
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    })
+
+    if (!user) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 })
+    }
+
     // For now, return default settings since we don't have a settings table
     // In a real app, you'd fetch from a user_settings table
     const defaultSettings = {

@@ -6,7 +6,6 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   ClockIcon,
-  CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline'
 import { formatCurrency, formatRelativeTime } from '@/lib/utils'
@@ -52,7 +51,7 @@ export default function RecentTransactions() {
       } else {
         setError('Failed to fetch transactions')
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching transactions:', error)
       setError('Failed to fetch transactions')
     } finally {

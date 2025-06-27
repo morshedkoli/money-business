@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { generateAvatar } from '@/lib/utils'
 import { useAuth } from '@/components/providers/AuthProvider'
@@ -177,10 +178,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="border-t border-gray-200 p-4">
             {!sidebarCollapsed && (
               <div className="flex items-center mb-4 transition-opacity duration-200">
-                <img
+                <Image
                   className="h-8 w-8 rounded-full"
                   src={avatarUrl}
                   alt={user.name}
+                  width={32}
+                  height={32}
                 />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.name}</p>
@@ -190,11 +193,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             )}
             {sidebarCollapsed && (
               <div className="flex justify-center mb-4">
-                <img
+                <Image
                   className="h-8 w-8 rounded-full"
                   src={avatarUrl}
                   alt={user.name}
                   title={user.name}
+                  width={32}
+                  height={32}
                 />
               </div>
             )}
@@ -283,10 +288,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </nav>
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center mb-4">
-              <img
+              <Image
                 className="h-8 w-8 rounded-full"
                 src={avatarUrl}
                 alt={user.name}
+                width={32}
+                height={32}
               />
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.name}</p>
@@ -356,10 +363,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               {/* Profile dropdown */}
               <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:lg:bg-gray-700" aria-hidden="true" />
               <div className="flex items-center">
-                <img
+                <Image
                   className="h-8 w-8 rounded-full"
                   src={avatarUrl}
                   alt={user.name}
+                  width={32}
+                  height={32}
                 />
                 <span className="hidden lg:flex lg:items-center">
                   <span className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-white" aria-hidden="true">

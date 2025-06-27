@@ -30,7 +30,7 @@ export default function OTPRegisterForm() {
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [otpSent, setOtpSent] = useState(false)
+  const [, setOtpSent] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   
   const router = useRouter()
@@ -62,7 +62,7 @@ export default function OTPRegisterForm() {
       } else {
         setError(result.message || 'Failed to send verification code')
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -88,7 +88,7 @@ export default function OTPRegisterForm() {
       } else {
         setError(result.message || 'Invalid verification code')
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -130,7 +130,7 @@ export default function OTPRegisterForm() {
       } else {
         setError(result.message || 'Registration failed')
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -158,7 +158,7 @@ export default function OTPRegisterForm() {
       } else {
         setError(result.message || 'Failed to resend verification code')
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -290,7 +290,7 @@ export default function OTPRegisterForm() {
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Check your email</h3>
             <p className="text-sm text-gray-600">
-              We've sent a 6-digit verification code to<br />
+              We&apos;ve sent a 6-digit verification code to<br />
               <span className="font-medium">{email}</span>
             </p>
           </div>
@@ -330,7 +330,7 @@ export default function OTPRegisterForm() {
 
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
-              Didn't receive the code?{' '}
+              Didn&apos;t receive the code?{' '}
               <button
                 onClick={handleResendOTP}
                 disabled={resendCooldown > 0 || loading}

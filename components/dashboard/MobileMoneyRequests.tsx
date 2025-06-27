@@ -9,7 +9,6 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 import { formatCurrency, formatRelativeTime } from '@/lib/utils'
-import { formatDistanceToNow } from 'date-fns'
 import { apiGet, apiPost } from '@/lib/api'
 import Link from 'next/link'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -94,9 +93,10 @@ export default function MobileMoneyRequests() {
       
       toast.success('Request accepted successfully')
       fetchRequests()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error accepting request:', error)
-      toast.error(error.message || 'Failed to accept request')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to accept request'
+      toast.error(errorMessage)
     } finally {
       setActionLoading(null)
     }
@@ -118,9 +118,10 @@ export default function MobileMoneyRequests() {
       
       toast.success('Request cancelled successfully!')
       fetchRequests()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error cancelling request:', error)
-      toast.error(error.message || 'Failed to cancel request')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to cancel request'
+      toast.error(errorMessage)
     } finally {
       setActionLoading(null)
     }

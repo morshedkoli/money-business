@@ -1,17 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import {
-  ClockIcon,
-  UserIcon,
   CreditCardIcon,
   DevicePhoneMobileIcon,
-  Cog6ToothIcon,
-  ShieldCheckIcon,
-  FunnelIcon,
   MagnifyingGlassIcon,
   ArrowUpIcon,
   ArrowDownIcon,
@@ -26,6 +21,7 @@ interface Transaction {
   description: string
   status: string
   createdAt: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any
 }
 
@@ -79,9 +75,9 @@ function HistoryPageContent() {
       }
       fetchTransactions()
     }
-  }, [mounted, loading, user, router, pagination.page, typeFilter, statusFilter])
+  }, [mounted, loading, user, router, pagination.page, typeFilter, statusFilter, fetchTransactions])
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       setIsLoading(true)
       const token = localStorage.getItem('token')
@@ -109,7 +105,7 @@ function HistoryPageContent() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [pagination.page, pagination.limit, typeFilter])
 
   const getTransactionIcon = (type: string, amount: number) => {
     if (type === 'TRANSFER_SENT' || amount < 0) {

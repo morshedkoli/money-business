@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -9,7 +9,6 @@ import { formatCurrency, formatRelativeTime } from '@/lib/utils'
 import {
   ArrowUpIcon,
   ArrowDownIcon,
-  ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
   MagnifyingGlassIcon,
@@ -89,9 +88,9 @@ export default function TransactionsPage() {
     if (user) {
       fetchTransactions()
     }
-  }, [user, pagination.page, typeFilter, dateFilter])
+  }, [user, pagination.page, typeFilter, dateFilter, fetchTransactions])
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setIsLoading(true)
     try {
       const token = localStorage.getItem('token')
@@ -128,7 +127,7 @@ export default function TransactionsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [pagination.page, pagination.limit, typeFilter, dateFilter, searchTerm])
 
   const handleSearch = () => {
     setPagination(prev => ({ ...prev, page: 1 }))

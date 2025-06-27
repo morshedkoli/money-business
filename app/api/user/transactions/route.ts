@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+interface TransactionItem {
+  id: string
+  type: 'WALLET_TRANSACTION' | 'TRANSFER_SENT' | 'TRANSFER_RECEIVED' | 'MOBILE_MONEY_REQUEST'
+  subType: string
+  amount: number
+  description: string
+  status: string
+  createdAt: Date
+  metadata: Record<string, unknown>
+}
+
 export async function GET(request: NextRequest) {
   try {
     const user = await getUserFromToken(request)
@@ -19,7 +30,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'all'
     const skip = (page - 1) * limit
 
-    let allTransactions: any[] = []
+    let allTransactions: TransactionItem[] = []
 
     // Get wallet transactions
     if (type === 'all' || type === 'wallet') {
