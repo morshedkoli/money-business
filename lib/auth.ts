@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs'
-import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { NextRequest } from 'next/server'
 import { NextAuthOptions } from 'next-auth'
